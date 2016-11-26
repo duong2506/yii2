@@ -6,6 +6,7 @@
  */
 
 namespace yii\console;
+
 use yii\console\controllers\HelpController;
 
 /**
@@ -16,12 +17,24 @@ use yii\console\controllers\HelpController;
  */
 class UnknownCommandException extends Exception
 {
+    /**
+     * @var string the name of the command that could not be recognized.
+     */
     public $command;
     /**
      * @var Application
      */
-    public $application;
+    protected $application;
 
+
+    /**
+     * Construct the exception.
+     *
+     * @param string $route the route of the command that could not be found.
+     * @param Application $application The console application instance involved.
+     * @param int $code The Exception code.
+     * @param \Exception $previous The previous exception used for the exception chaining.
+     */
     public function __construct($route, $application, $code = 0, \Exception $previous = null)
     {
         $this->command = $route;
@@ -67,15 +80,49 @@ class UnknownCommandException extends Exception
                 }
             }
         }
-        $availableActions = $this->filterBySimilarity($availableActions);
-
-        asort($availableActions);
-        return $availableActions;
+        return $this->filterBySimilarity($availableActions, $this->command);
     }
 
-    private function filterBySimilarity($actions)
+    /**
+     * Find suggest alternative commands based on string similarity.
+     *
+     * Alternatives are searched using the following steps:
+     *
+     * - suggest alternatives that begin with `$command`
+     * - Find typos by calculating the Levenshtein distance between the unknown command and all
+     *   available commands. The Levenshtein distance is defined as the minimal number of
+     *   characters you have to replace, insert or delete to transform str1 into str2.
+     *
+     * @see http://php.net/manual/en/function.levenshtein.php
+     * @param array $actions available command names.
+     * @param string $command the command to compare to.
+     * @return array a list of suggested alternatives sorted by similarity.
+     */
+    private function filterBySimilarity($actions, $command)
     {
-        // TODO
-        return $actions;
+        $alternatives = [];
+
+        // suggest alternatives that begin with $command first
+        foreach($actions as $action) {
+            if (strpos($action, $command) === 0) {
+                $alternatives[] = $action;
+            }
+        }
+
+        // calculate the Levenshtein distance between the unknown command and all available commands.
+        $distances = array_map(function($action) use ($command) {
+            $action = strlen($action) > 255 ? substr($action, 0, 255) : $action;
+            $command = strlen($command) > 255 ? substr($command, 0, 255) : $command;
+            return levenshtein($action, $command);
+        }, array_combine($actions, $actions));
+
+        // we assume a typo if the levensthein distance is no more than 3, i.e. 3 replacements needed
+        $relevantTypos = array_filter($distances, function($distance) {
+            return $distance <= 3;
+        });
+        asort($relevantTypos);
+        $alternatives = array_merge($alternatives, array_flip($relevantTypos));
+
+        return array_unique($alternatives);
     }
 }
