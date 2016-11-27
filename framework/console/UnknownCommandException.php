@@ -116,7 +116,7 @@ class UnknownCommandException extends Exception
         $alternatives = [];
 
         // suggest alternatives that begin with $command first
-        foreach($actions as $action) {
+        foreach ($actions as $action) {
             if (strpos($action, $command) === 0) {
                 $alternatives[] = $action;
             }
