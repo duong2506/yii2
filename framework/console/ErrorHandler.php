@@ -33,7 +33,7 @@ class ErrorHandler extends \yii\base\ErrorHandler
             // display message and suggest alternatives in case of unknown command
             $message = $this->formatMessage($exception->getName() . ': ') . $exception->command;
             $alternatives = $exception->suggestAlternatives();
-            if (count($alternatives) == 1) {
+            if (count($alternatives) === 1) {
                 $message .= "\n\nDid you mean \"" . reset($alternatives) . "\"?";
             } elseif (count($alternatives) > 1) {
                 $message .= "\n\nDid you mean one of these?\n    - " . implode("\n    - ", $alternatives);
