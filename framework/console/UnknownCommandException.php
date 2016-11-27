@@ -50,6 +50,19 @@ class UnknownCommandException extends Exception
         return 'Unknown command';
     }
 
+    /**
+     * Suggest alternative commands for [[$command]] based on string similarity.
+     *
+     * Alternatives are searched using the following steps:
+     *
+     * - suggest alternatives that begin with `$command`
+     * - Find typos by calculating the Levenshtein distance between the unknown command and all
+     *   available commands. The Levenshtein distance is defined as the minimal number of
+     *   characters you have to replace, insert or delete to transform str1 into str2.
+     *
+     * @see http://php.net/manual/en/function.levenshtein.php
+     * @return array a list of suggested alternatives sorted by similarity.
+     */
     public function suggestAlternatives()
     {
         $help = $this->application->createController('help');
