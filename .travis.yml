@@ -56,9 +56,12 @@ matrix:
         - postgresql
     # have a separate branch for javascript tests
     - language: node_js
-      node_js: 0.11
-      # no PHP version for JS tests
+      node_js: 6
+      dist: trusty
+      # overwrite php related settings
       php:
+      services:
+      addons:
       install:
         - travis_retry npm install
         - travis_retry composer self-update && composer --version
