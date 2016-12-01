@@ -59,7 +59,11 @@ matrix:
       node_js: 0.11
       # no PHP version for JS tests
       php:
-      install: travis_retry npm install
+      install:
+        - travis_retry npm install
+        - travis_retry composer self-update && composer --version
+        - travis_retry composer global require "fxp/composer-asset-plugin:^1.2.0"
+        - travis_retry composer update --prefer-dist --no-interaction
       before_script:
         - node --version
         - npm --version
