@@ -64,6 +64,8 @@ matrix:
       addons:
       install:
         - travis_retry npm install
+        # disable xdebug for performance in composer
+        - phpenv config-rm xdebug.ini || echo "xdebug is not installed"
         - travis_retry composer self-update && composer --version
         - travis_retry composer global require "fxp/composer-asset-plugin:^1.2.0"
         - travis_retry composer update --prefer-dist --no-interaction
